@@ -1,50 +1,74 @@
 import { ApolloServer } from '@apollo/server'
 import { startStandaloneServer } from '@apollo/server/standalone'
+import { v4 as uuidv4 } from 'uuid'
+import type { Warehouse } from '../types'
 
 const typeDefs = `#graphql
-
-  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
-
-
-  # This "Book" type defines the queryable fields for every book in our data source.
-
-  type Book {
-
-    title: String
-
-    author: String
-
+  type Shelf {
+    name: String!
   }
 
+  type Zone {
+    zoneNumber: Int!
+    shelves: [Shelf!]!
+  }
 
-  # The "Query" type is special: it lists all of the available queries that
+  type Warehouse {
+    id: ID!
+    name: String!
+    zones: [Zone!]!
+  }
 
-  # clients can execute, along with the return type for each. In this
+  input ShelfInput {
+    name: String!
+  }
 
-  # case, the "books" query returns an array of zero or more Books (defined above).
+  input ZoneInput {
+    zoneNumber: Int!
+    shelves: [ShelfInput!]!
+  }
+
+  input WarehouseInput {
+    name: String!
+    zones: [ZoneInput!]!
+  }
+
+  type Mutation {
+    createWarehouse(input: WarehouseInput!): Warehouse!
+  }
 
   type Query {
-
-    books: [Book]
-
+    warehouses: [Warehouse!]!
   }
-
 `
 
-const books = [
-  {
-    title: 'The Awakening',
-    author: 'Kate Chopin',
-  },
-  {
-    title: 'City of Glass',
-    author: 'Paul Auster',
-  },
-]
+const warehouses: Warehouse[] = []
 
 const resolvers = {
   Query: {
-    books: () => books,
+    warehouses: () => warehouses,
+  },
+  Mutation: {
+    createWarehouse: (_: any, { input }: { input: Warehouse }) => {
+      if (warehouses.some(warehouse => warehouse.name === input.name)) {
+        throw new Error(`Warehouse with name ${input.name} already exists`)
+      }
+
+      if (
+        input.zones.some(zone => zone.zoneNumber < 1 || zone.zoneNumber > 12)
+      ) {
+        throw new Error(`Zone number must be between 1 and 12`)
+      }
+
+      // zone cannot have more than 10 shelves
+      if (input.zones.some(zone => zone.shelves.length > 10)) {
+        throw new Error(`Zone cannot have more than 10 shelves`)
+      }
+
+      const newWarehouse = { id: uuidv4(), ...input }
+      warehouses.push(newWarehouse)
+      return newWarehouse
+    },
   },
 }
 
