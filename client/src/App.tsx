@@ -53,22 +53,6 @@ export default function App() {
                     </CardHeader>
                     <CardContent className="grid gap-4">
                       <div>
-                        {/* {w.zones.map(z => (
-                          <div
-                            key={z.id}
-                            className="mb-4 grid grid-cols-[25px_1fr] items-start pb-4 last:mb-0 last:pb-0"
-                          >
-                            <span className="flex h-2 w-2 translate-y-1 rounded-full bg-slate-700" />
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium leading-none">
-                                {`Zone ${z.zoneNumber}`}
-                              </p>
-                              <p className="text-sm text-slate-500">
-                                {z.shelves.map(s => s.name).join(', ')}
-                              </p>
-                            </div>
-                          </div>
-                        ))} */}
                         {Object.entries(groupShelvesByZone(w)).map(
                           ([zoneNumber, shelves]) => (
                             <div
