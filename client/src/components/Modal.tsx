@@ -10,12 +10,15 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import WarehouseForm from './WarehouseForm'
+import { useState } from 'react'
 
 type Props = {
   title: string
 }
 
 export default function Modal({ title }: Props) {
+  const [loading, setLoading] = useState<boolean>(false)
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -27,7 +30,7 @@ export default function Modal({ title }: Props) {
           <DialogDescription>Form to create a new warehouse.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <WarehouseForm />
+          <WarehouseForm setLoading={setLoading} />
         </div>
         <DialogFooter>
           <DialogClose asChild>
@@ -36,6 +39,7 @@ export default function Modal({ title }: Props) {
             </Button>
           </DialogClose>
           <Button
+            disabled={loading}
             onClick={() => {
               const warehouseForm = document.getElementById('warehouse-form')
               if (warehouseForm) {
@@ -45,7 +49,7 @@ export default function Modal({ title }: Props) {
               }
             }}
           >
-            Create warehouse
+            {loading ? 'Creating...' : 'Create warehouse'}
           </Button>
         </DialogFooter>
       </DialogContent>

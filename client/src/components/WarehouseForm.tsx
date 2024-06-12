@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { gql, useMutation } from '@apollo/client'
+import { useMutation } from '@apollo/client'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -14,8 +14,12 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/components/ui/use-toast'
-import { GET_WAREHOUSES } from '@/lib/gql'
+import { CREATE_WAREHOUSE, GET_WAREHOUSES } from '@/lib/gql'
 import { useEffect } from 'react'
+
+type Props = {
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>
+}
 
 const FormSchema = z.object({
   name: z.string().min(1, 'Warehouse name is required'),
@@ -27,21 +31,7 @@ const FormSchema = z.object({
   ),
 })
 
-const CREATE_WAREHOUSE = gql`
-  mutation CreateWarehouse($input: WarehouseInput!) {
-    createWarehouse(input: $input) {
-      name
-      zones {
-        zoneNumber
-        shelves {
-          name
-        }
-      }
-    }
-  }
-`
-
-export default function WarehouseForm() {
+export default function WarehouseForm({ setLoading }: Props) {
   const { toast } = useToast()
   const [mutateFunction, { data, loading, error }] = useMutation(
     CREATE_WAREHOUSE,
@@ -64,6 +54,10 @@ export default function WarehouseForm() {
       })
     }
   }, [error, toast])
+
+  useEffect(() => {
+    setLoading(loading)
+  }, [loading, setLoading])
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),

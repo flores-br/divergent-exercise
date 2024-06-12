@@ -1,4 +1,4 @@
-import { gql, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 
 import {
   Card,
@@ -40,7 +40,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-600 p-3 flex flex-col justify-center items-center gap-10">
       <Modal title="Create a warehouse" />
       {loading && <SkeletonCard />}
-      {data?.warehouses?.length > 0 ? (
+      {data?.warehouses ? (
         <Carousel className="w-full max-w-xs">
           <CarouselContent>
             {data.warehouses.map(w => (

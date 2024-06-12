@@ -1,6 +1,6 @@
-import { gql } from '@apollo/client'
+import { gql } from '@/__generated__'
 
-export const GET_WAREHOUSES = gql`
+export const GET_WAREHOUSES = gql(/* GraphQL */ `
   query GetWarehouses {
     warehouses {
       id
@@ -14,4 +14,18 @@ export const GET_WAREHOUSES = gql`
       }
     }
   }
-`
+`)
+
+export const CREATE_WAREHOUSE = gql(/* GraphQL */ `
+  mutation CreateWarehouse($input: WarehouseInput!) {
+    createWarehouse(input: $input) {
+      name
+      zones {
+        zoneNumber
+        shelves {
+          name
+        }
+      }
+    }
+  }
+`)
