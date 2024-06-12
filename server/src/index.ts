@@ -52,20 +52,30 @@ const resolvers = {
   Mutation: {
     createWarehouse: (_: any, { input }: { input: Warehouse }) => {
       if (warehouses.some(warehouse => warehouse.name === input.name)) {
-        throw new Error(`Warehouse with name ${input.name} already exists`)
+        throw new Error(`Warehouse with name "${input.name}" already exists.`)
       }
 
       if (
         input.zones.some(zone => zone.zoneNumber < 1 || zone.zoneNumber > 12)
       ) {
-        throw new Error(`Zone number must be between 1 and 12`)
+        throw new Error(`Zone number must be between 1 and 12.`)
       }
 
       if (input.zones.some(zone => zone.shelves.length > 10)) {
-        throw new Error(`Zone cannot have more than 10 shelves`)
+        throw new Error(`Zone cannot have more than 10 shelves.`)
       }
 
-      // generate uuid for zone
+      // shelf names must be unique
+      const set = new Set<string>()
+      input.zones.some(zone =>
+        zone.shelves.some(shelf => {
+          if (set.has(shelf.name)) {
+            throw new Error(`Shelf name "${shelf.name}" must be unique.`)
+          }
+          set.add(shelf.name)
+        }),
+      )
+
       input.zones.forEach(zone => {
         zone.id = uuidv4()
       })
