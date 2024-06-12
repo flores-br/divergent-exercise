@@ -18,6 +18,19 @@ import SkeletonCard from './components/SkeletonCard'
 import Modal from './components/Modal'
 import { GET_WAREHOUSES } from './lib/gql'
 
+const groupShelvesByZone = data => {
+  const groupedZones = {}
+
+  data.zones.forEach(zone => {
+    if (!groupedZones[zone.zoneNumber]) {
+      groupedZones[zone.zoneNumber] = []
+    }
+    groupedZones[zone.zoneNumber].push(...zone.shelves)
+  })
+
+  return groupedZones
+}
+
 export default function App() {
   const { loading, error, data } = useQuery(GET_WAREHOUSES)
 
@@ -40,7 +53,7 @@ export default function App() {
                     </CardHeader>
                     <CardContent className="grid gap-4">
                       <div>
-                        {w.zones.map(z => (
+                        {/* {w.zones.map(z => (
                           <div
                             key={z.id}
                             className="mb-4 grid grid-cols-[25px_1fr] items-start pb-4 last:mb-0 last:pb-0"
@@ -55,7 +68,25 @@ export default function App() {
                               </p>
                             </div>
                           </div>
-                        ))}
+                        ))} */}
+                        {Object.entries(groupShelvesByZone(w)).map(
+                          ([zoneNumber, shelves]) => (
+                            <div
+                              key={zoneNumber}
+                              className="mb-4 grid grid-cols-[25px_1fr] items-start pb-4 last:mb-0 last:pb-0"
+                            >
+                              <span className="flex h-2 w-2 translate-y-1 rounded-full bg-slate-700" />
+                              <div className="space-y-1">
+                                <p className="text-sm font-medium leading-none">
+                                  {`Zone ${zoneNumber}`}
+                                </p>
+                                <p className="text-sm text-slate-500">
+                                  {shelves.map(s => s.name).join(', ')}
+                                </p>
+                              </div>
+                            </div>
+                          ),
+                        )}
                       </div>
                     </CardContent>
                   </Card>
