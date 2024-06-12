@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/components/ui/use-toast'
 import { GET_WAREHOUSES } from '@/lib/gql'
+import { useEffect } from 'react'
 
 const FormSchema = z.object({
   name: z.string().min(1, 'Warehouse name is required'),
@@ -54,9 +55,15 @@ export default function WarehouseForm() {
     },
   )
 
-  if (error) {
-    console.log(error)
-  }
+  useEffect(() => {
+    if (error?.graphQLErrors) {
+      toast({
+        variant: 'destructive',
+        title: 'Uh Oh! Something went wrong.',
+        description: error.graphQLErrors.map(e => e.message).join('\n'),
+      })
+    }
+  }, [error, toast])
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
