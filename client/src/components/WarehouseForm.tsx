@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { gql, useMutation } from '@apollo/client'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +13,8 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { useToast } from '@/components/ui/use-toast'
+import { GET_WAREHOUSES } from '@/lib/gql'
 
 const FormSchema = z.object({
   name: z.string().min(1, 'Warehouse name is required'),
@@ -23,7 +26,38 @@ const FormSchema = z.object({
   ),
 })
 
+const CREATE_WAREHOUSE = gql`
+  mutation CreateWarehouse($input: WarehouseInput!) {
+    createWarehouse(input: $input) {
+      name
+      zones {
+        zoneNumber
+        shelves {
+          name
+        }
+      }
+    }
+  }
+`
+
 export default function WarehouseForm() {
+  const { toast } = useToast()
+  const [mutateFunction, { data, loading, error }] = useMutation(
+    CREATE_WAREHOUSE,
+    {
+      onCompleted: () => {
+        toast({
+          description: 'The warehouse was created successfully',
+        })
+      },
+      refetchQueries: [GET_WAREHOUSES, 'GetWarehouses'],
+    },
+  )
+
+  if (error) {
+    console.log(error)
+  }
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -38,20 +72,30 @@ export default function WarehouseForm() {
   })
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log(data)
+    mutateFunction({
+      variables: {
+        input: {
+          name: data.name,
+          zones: data.shelves.map(shelf => ({
+            zoneNumber: shelf.zone,
+            shelves: [{ name: shelf.shelfName }],
+          })),
+        },
+      },
+    })
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-1/3 space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} id="warehouse-form">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Warehouse Name</FormLabel>
+            <FormItem className="grid grid-cols-4 items-center gap-4">
+              <FormLabel>Warehouse name</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input className="col-span-3" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -63,10 +107,10 @@ export default function WarehouseForm() {
               control={form.control}
               name={`shelves.${index}.shelfName`}
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Shelf Name</FormLabel>
+                <FormItem className="grid grid-cols-4 items-center gap-4">
+                  <FormLabel>Shelf name</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input className="col-span-3" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -76,20 +120,21 @@ export default function WarehouseForm() {
               control={form.control}
               name={`shelves.${index}.zone`}
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="grid grid-cols-4 items-center gap-4">
                   <FormLabel>Zone</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" />
+                    <Input className="col-span-3" {...field} type="number" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <Button
+              size="sm"
               variant="destructive"
               type="button"
               onClick={() => remove(index)}
-              className="mt-4"
+              className="my-4"
             >
               Remove shelf
             </Button>
@@ -102,7 +147,6 @@ export default function WarehouseForm() {
         >
           Add Shelf
         </Button>
-        <Button type="submit">Submit</Button>
       </form>
     </Form>
   )

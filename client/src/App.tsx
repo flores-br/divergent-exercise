@@ -14,24 +14,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel'
-import WarehouseForm from './components/WarehouseForm'
 import SkeletonCard from './components/SkeletonCard'
-
-const GET_WAREHOUSES = gql`
-  query GetWarehouses {
-    warehouses {
-      id
-      name
-      zones {
-        id
-        zoneNumber
-        shelves {
-          name
-        }
-      }
-    }
-  }
-`
+import Modal from './components/Modal'
+import { GET_WAREHOUSES } from './lib/gql'
 
 export default function App() {
   const { loading, error, data } = useQuery(GET_WAREHOUSES)
@@ -39,10 +24,10 @@ export default function App() {
   if (error) return `Error! ${error.message}`
 
   return (
-    <div className="min-h-screen bg-slate-600 p-3 flex flex-col justify-around items-center">
-      <WarehouseForm />
+    <div className="min-h-screen bg-slate-600 p-3 flex flex-col justify-center items-center gap-10">
+      <Modal title="Create a warehouse" />
       {loading && <SkeletonCard />}
-      {data && (
+      {data?.warehouses?.length > 0 ? (
         <Carousel className="w-full max-w-xs">
           <CarouselContent>
             {data.warehouses.map(w => (
@@ -81,6 +66,8 @@ export default function App() {
           <CarouselPrevious />
           <CarouselNext />
         </Carousel>
+      ) : (
+        <p className="text-slate-300">No warehouses found</p>
       )}
     </div>
   )
