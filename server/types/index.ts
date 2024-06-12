@@ -3,6 +3,7 @@ export type Shelf = {
 }
 
 export type Zone = {
+  id: string
   zoneNumber: number
   shelves: Shelf[]
 }

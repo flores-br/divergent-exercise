@@ -9,6 +9,7 @@ const typeDefs = `#graphql
   }
 
   type Zone {
+    id: ID!
     zoneNumber: Int!
     shelves: [Shelf!]!
   }
@@ -60,10 +61,14 @@ const resolvers = {
         throw new Error(`Zone number must be between 1 and 12`)
       }
 
-      // zone cannot have more than 10 shelves
       if (input.zones.some(zone => zone.shelves.length > 10)) {
         throw new Error(`Zone cannot have more than 10 shelves`)
       }
+
+      // generate uuid for zone
+      input.zones.forEach(zone => {
+        zone.id = uuidv4()
+      })
 
       const newWarehouse = { id: uuidv4(), ...input }
       warehouses.push(newWarehouse)
