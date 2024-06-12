@@ -61,7 +61,7 @@ const resolvers = {
         throw new Error(`Zone number must be between 1 and 12.`)
       }
 
-      if (input.zones.some(zone => zone.shelves.length > 10)) {
+      if (input.zones.length > 10) {
         throw new Error(`Zone cannot have more than 10 shelves.`)
       }
 
